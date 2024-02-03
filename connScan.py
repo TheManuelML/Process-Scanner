@@ -1,7 +1,3 @@
- #TODO modo silencioso, sin imprimir cosas en la terminal -g --ghost
- #TODO cifrar reporte, cifrar el reporte antes de guardarlo en un archivo -e --encrypt
- #TODO aumentar detalles del reporte, hisotrial de eventos y tiempo de ejecucion de procesos
-
 ## Libraries
 import psutil
 import argparse
