@@ -2,21 +2,24 @@
 import psutil
 import argparse
 from ip2geotools.databases.noncommercial import DbIpCity
+from collections import Counter
 from time import strftime, sleep
 from random import randint
-from collections import Counter
+from termcolor import colored
 
 
 ## Version
-__version__ = "1.0"
+__version__ = "1.2"
 
 ## Parameters
 parser = argparse.ArgumentParser(prog='Connections Scan', description='Scan connections through processes listing their names, pid and their ip. You can also look for geographical information about the connections. Save your scan in a report.')
 
-parser.add_argument("-i", "--ip", action="store_true", help= "enable more detail information about ip geolocation; region, country, city, and coordinates.")
+parser.add_argument("-g", "--ghost", action="store_true", help="Enable ghost mode hidding every output from the terminal, add a -s [FILE] to see the output in a file.")
+parser.add_argument("-i", "--ip", action="store_true", help= "Enable more detail information about ip geolocation; region, country, city, and coordinates.")
 parser.add_argument("-s", "--save", action="store", help= "The scan will be saved in a file, you can choose the name of the file.")
 
 argument = parser.parse_args()
+
 
 ## Process "database"
 ps_amount = 0
@@ -36,44 +39,47 @@ def process_listing():
     ## Error messages and managment
     try:
         ## Checking all inet connections, and checking for ESTABLISHED connections
-        connections = psutil.net_connections(kind="inet")
+        connections = psutil.net_connections(kind="all")
         for conn in connections:
             ## If connection is established, print information about it and record the info
-            if conn.status == "ESTABLISHED": 
-                print("\nCONNECTION FOUND")
-                print("======================================================")
-                
+            if conn.status == "ESTABLISHED" or conn.status == None:
+                if not argument.ghost:
+                    print(colored("\nCONNECTION FOUND", "cyan"))
+                    print("======================================================")
+            
                 pid = conn.pid
                 ip = conn.raddr.ip
 
                 process = psutil.Process(pid)
-
-                print(f"ID: {pid}")
-                print(f"Name: {process.name()}")
-                print(f"Status: {process.status()}")
+                if not argument.ghost:
+                    print(f"PID: {pid}")
+                    print(f"Name: {process.name()}")
+                    print(f"Status: " + colored(f"{process.status()}", "green"))
 
                 ## Printing extra ip information
                 if argument.ip:
                     info = DbIpCity.get(ip, api_key="free")
 
                     ip_geolocation = {"IP": info.ip_address, "City": info.city, "Region": info.region, "Country": info.country, "Latitude": info.latitude, "Longitude": info.longitude}
-
-                    print(f"IP: {info.ip_address}")
-                    print(f"City: {info.city}")
-                    print(f"Region: {info.region}")
-                    print(f"Country: {info.country}")
-                    print(f"Latitude: {info.latitude}")
-                    print(f"Longitude: {info.longitude}")
+                    if not argument.ghost:
+                        print(f"IP: " + colored(f"{info.ip_address}", "yellow"))
+                        print(f"City: {info.city}")
+                        print(f"Region: {info.region}")
+                        print(f"Country: {info.country}")
+                        print(f"Latitude: {info.latitude}")
+                        print(f"Longitude: {info.longitude}")
 
                     ps_ip_list.append(ip_geolocation)
                 else:
-                    print(f"IP: {ip}")
+                    if not argument.ghost:
+                        print(f"IP: {ip}")
                     ## Saving processes data
                     ps_ip_list.append(ip)
                 ps_amount += 1 
                 ps_name_list.append(process.name())
                 ps_id_list.append(pid)
-                print("======================================================")
+                if not argument.ghost:
+                    print("======================================================")
 
                 sleep(0.5)
     except psutil.AccessDenied:
@@ -106,7 +112,7 @@ def report():
         print(f"Identifier: {random_report_id}", file=file)
         print("======================================================", file=file)
         print(f"Processes Amount: {ps_amount}", file=file)
-        print(f"ID list: ", file=file)
+        print(f"PID list: ", file=file)
         for identifier in ps_id_list:
             if identifier not in printed_ids:
                 print(f"- {identifier} x{count_ids[identifier]}", file=file)
@@ -133,10 +139,17 @@ def report():
                 print(f"- {ip_info}", file=file)
         print("======================================================", file=file)
 
+
+def encrypt_report():
+    print("Hello world!!!")
+
 ## Principal logic
 if __name__ == "__main__":  
     process_listing()   
     ## Extra logic for saving a report   
     if argument.save:
         report()
-        print(f"\n[!] REPORT saved in ./{filename}")
+        ## Hide prints if the ghost mode is on
+        if not argument.ghost:
+            print(colored(f"\n[!] REPORT saved in ./{filename}", "magenta"))
+            
