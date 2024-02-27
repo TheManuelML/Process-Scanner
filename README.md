@@ -3,8 +3,8 @@ Script that scans TCP connections through running processes. You can also check 
 
 ## Prepare
 ```
->> git clone https://github.com/TheManuelML/connectionScanner
->> cd connectionScanner
+>> git clone https://github.com/TheManuelML/scanTCP
+>> cd scanTCP
 
 >> python3 -m venv venv
 >> source venv/bin/activate
