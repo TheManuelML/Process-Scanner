@@ -18,6 +18,6 @@ A tool that realizes different enumerations in your machine; processes, connecti
 ```
 
 ## Options
-- -m, --mode     Select the scann mode, check the scanning modes in the --help message.
-- -s, --save     Save the output of the scan in a file, required argument: File-name.
-- -h, --help     Print a help message and exit.
+- -m, --mode   ->  Select the scan mode, check the scanning modes in the --help message.
+- -s, --save   ->  Save the output of the scan in a file, required argument: File-name. (Not working)
+- -h, --help   ->  Print a help message and exit.
